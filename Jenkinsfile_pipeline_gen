@@ -24,8 +24,7 @@ node('built-in'){
         cleanWs(disableDeferredWipeout:true, deleteDirs:true);def scmVars=checkout scm;
         
         // Loading pipeline utilities script
-        def command = "cp -r $MW_SUPPORT_PACKAGE_ROOT/toolbox/padv/pipeline_generator/ci/templates/jenkins/MW_PipelineUtils.groovy $WORKSPACE"
-        def isUnixEnvironment = isUnix()
+        def command = "powershell -NoProfile -Command \"Copy-Item -Force -Path '${MW_SUPPORT_PACKAGE_ROOT}\\toolbox\\padv\\pipeline_generator\\ci\\templates\\jenkins\\MW_PipelineUtils.groovy' -Destination '${WORKSPACE}'\""        def isUnixEnvironment = isUnix()
         if (isUnixEnvironment == true){ sh(command) } else { bat(command)}
         def pipelineUtils = load("$WORKSPACE/MW_PipelineUtils.groovy")
 
