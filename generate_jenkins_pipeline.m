@@ -2,14 +2,18 @@
 
 function generate_jenkins_pipeline()
     workspace = string(getenv('WORKSPACE'));      % Reading Jenkins workspace environment variable
-    supportPackageRoot = string(getenv('MW_SUPPORT_PACKAGE_ROOT'));
+    supportPackageRoot = 'C:\\ProgramData\\MATLAB\\SupportPackages\\R2025b';
     relativeProjectPath = string(getenv('MW_RELATIVE_PROJECT_PATH'));
     remoteBuildCacheName = string(getenv('MW_REMOTE_BUILD_CACHE_NAME'));
     pipelineGenDirectory = string(getenv('MW_PIPELINE_GEN_DIRECTORY'));
 
-    cp = openProject(strcat(workspace,filesep,string(relativeProjectPath)));
+    projectPath = strcat(workspace,filesep,string(relativeProjectPath));
+    if projectPath == "\"
+        projectPath = ".";
+    end
+    cp = openProject(projectPath);
     op = padv.pipeline.JenkinsOptions;
-    op.AgentLabel = "Built-In Node";
+    op.AgentLabel = "built-in";
     op.PipelineArchitecture = "SerialStagesGroupPerTask";
     op.GeneratorVersion = 2;
     op.SupportPackageRoot = supportPackageRoot;
@@ -18,7 +22,7 @@ function generate_jenkins_pipeline()
     op.RunprocessCommandOptions.GenerateJUnitForProcess = true;
     op.ReportPath = "$PROJECTROOT$/PA_Results/Report/ProcessAdvisorReport";
     op.RelativeProjectPath = relativeProjectPath;
-    op.RemoteBuildCacheName = remoteBuildCacheName;
+    %op.RemoteBuildCacheName = remoteBuildCacheName;
 
     op.ArtifactServiceMode = 'network';         % network/jfrog/s3/azure_blob
     op.NetworkStoragePath = 'C:\\Users\\aloytyno\\';
