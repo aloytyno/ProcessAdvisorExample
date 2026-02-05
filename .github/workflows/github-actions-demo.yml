@@ -1,7 +1,8 @@
-name:
-  simulink_pipeline
+name: simulink_pipeline
  
 on:
+  push:
+
   workflow_dispatch:
 
 permissions:
@@ -13,8 +14,7 @@ permissions:
 
 
 env:
-  PATH_TO_MATLAB:
-    C:\Program Files\MATLAB\R2025b\bin\win64\
+  PATH_TO_MATLAB: C:\Program Files\MATLAB\R2025b\bin\win64
 
 
 jobs:
@@ -144,8 +144,6 @@ jobs:
             30
 
 
-
-
   Runprocess:
     if:
       ${{ !cancelled() }}
@@ -174,11 +172,11 @@ jobs:
             Restore_Cache_padv_artifacts
 
 
-      - name:
-          Setup MATLAB
+      - name: Setup MATLAB
+        shell: pwsh
 
-        run:
-          echo "$PATH_TO_MATLAB" >> $GITHUB_PATH
+        run: |
+          $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name:
           Launch MATLAB
@@ -189,6 +187,12 @@ jobs:
           -nodesktop 
           -logfile output.log 
           -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);" 
+ 
+      - name: Debug – list Process Advisor outputs
+        shell: pwsh
+        run: |
+          Write-Host "=== Workspace contents after PADV ==="
+          Get-ChildItem -Recurse -Force
 
       - name:
           Upload Artifacts
@@ -323,7 +327,7 @@ jobs:
 
           path:
             |
-            derived/artifacts.dmr
+            derived\artifacts.dmr
             ProcessAdvisorReport.pdf
 
           retention-days:
@@ -358,7 +362,7 @@ jobs:
           Download Artifacts
 
         uses:
-          actions\download-artifact@v4
+          actions/download-artifact@v4
 
         with:
           name:
@@ -486,8 +490,3 @@ jobs:
             04_Results\test_results\findAcrossModelClones
             04_Results\test_results\findLibraryClones
             derived\artifacts.dmr
-
-
-
-
-
