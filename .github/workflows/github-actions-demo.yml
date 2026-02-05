@@ -1,7 +1,8 @@
-name:
-  simulink_pipeline
+name: simulink_pipeline
  
 on:
+  push:
+
   workflow_dispatch:
 
 permissions:
@@ -13,8 +14,7 @@ permissions:
 
 
 env:
-  PATH_TO_MATLAB:
-    C:\Program Files\MATLAB\R2025b\bin\win64\
+  PATH_TO_MATLAB: C:\Program Files\MATLAB\R2025b\bin\win64
 
 
 jobs:
@@ -174,11 +174,11 @@ jobs:
             Restore_Cache_padv_artifacts
 
 
-      - name:
-          Setup MATLAB
+      - name: Setup MATLAB
+        shell: pwsh
 
-        run:
-          echo "$PATH_TO_MATLAB" >> $GITHUB_PATH
+        run: |
+          $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name:
           Launch MATLAB
