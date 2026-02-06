@@ -165,31 +165,53 @@ jobs:
   #         name:
   #           Restore_Cache_padv_artifacts
 
-  runprocess:
+ runprocess:
     if: ${{ !cancelled() }}
-    runs-on: self-hosted
+    runs-on: [self-hosted, Windows]   # Make sure your runner label matches
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Setup MATLAB
-        shell: powershell
-        run: |
-          $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    - name: Add MATLAB to PATH (cmd.exe)
+      shell: cmd
+      run: |
+        echo %PATH_TO_MATLAB%>>%GITHUB_PATH%
 
-      - name: Launch MATLAB
-        shell: powershell
-        run: >
-          matlab
-          -nodesktop
-          -logfile output.log
-          -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);"
+    - name: Launch MATLAB (cmd.exe)
+      shell: cmd
+      run: |
+        matlab -nodesktop -logfile output.log -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);"
 
-      - name: Debug – list Process Advisor outputs
-        shell: powershell
-        run: |
-          Write-Host "=== Workspace contents after PADV ==="
-          Get-ChildItem -Recurse -Force
+    - name: Debug – list Process Advisor outputs (cmd.exe)
+      shell: cmd
+      run: |
+        dir /s /b
+
+  # runprocess:
+  #   if: ${{ !cancelled() }}
+  #   runs-on: self-hosted
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup MATLAB
+  #       shell: powershell
+  #       run: |
+  #         $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+  #     - name: Launch MATLAB
+  #       shell: powershell
+  #       run: >
+  #         matlab
+  #         -nodesktop
+  #         -logfile output.log
+  #         -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);"
+
+  #     - name: Debug – list Process Advisor outputs
+  #       shell: powershell
+  #       run: |
+  #         Write-Host "=== Workspace contents after PADV ==="
+  #         Get-ChildItem -Recurse -Force
 
   #     - name:
   #         Upload Artifacts
