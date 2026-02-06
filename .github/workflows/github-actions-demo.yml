@@ -1,46 +1,41 @@
 name: simulink_pipeline
- 
+
 on:
   push:
-
   workflow_dispatch:
 
 permissions:
-  checks:
-    write
-
-  contents:
-    read
-
+  checks: write
+  contents: read
 
 env:
-  PATH_TO_MATLAB: C:\Program Files\MATLAB\R2025b\bin\win64
+  PATH_TO_MATLAB: "C:\\Program Files\\MATLAB\\R2025b\\bin\\win64"
 
 jobs:
   # Restore_Cache:
   #   runs-on:
   #     self-hosted
-
+  #
   #   steps:
   #     - name:
   #         Checkout Repository
-
+  #
   #       uses:
   #         actions/checkout@v4
-
+  #
   #     - name:
   #         Restore Cache
-
+  #
   #       uses:
   #         actions/cache@v4
-
+  #
   #       with:
   #         key:
   #           padv_artifacts-${{ github.run_id }}-${{ github.run_attempt }}
-
+  #
   #         restore-keys:
   #           padv_artifacts-cache
-
+  #
   #         path:
   #           |
   #           03_Code
@@ -82,21 +77,21 @@ jobs:
   #           04_Results\test_results\findAcrossModelClones
   #           04_Results\test_results\findLibraryClones
   #           derived\artifacts.dmr
-
-
+  #
+  #
   #     - name:
   #         Upload Artifacts
-
+  #
   #       if:
   #         ${{ !cancelled() }}
-
+  #
   #       uses:
   #         actions/upload-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Restore_Cache_padv_artifacts
-
+  #
   #         path:
   #           |
   #           derived\artifacts.dmr
@@ -138,55 +133,58 @@ jobs:
   #           04_Results\OuterLoop_Control\webview
   #           04_Results\test_results\findAcrossModelClones
   #           04_Results\test_results\findLibraryClones
-
+  #
   #         retention-days:
   #           30
-
-
+  #
+  #
   # Runprocess:
   #   if:
   #     ${{ !cancelled() }}
-
+  #
   #   needs:
   #     Restore_Cache
-
+  #
   #   runs-on:
   #     self-hosted
-
+  #
   #   steps:
   #     - name:
   #         Checkout Repository
-
+  #
   #       uses:
   #         actions/checkout@v4
-
+  #
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Restore_Cache_padv_artifacts
 
+  runprocess:
+    if: ${{ !cancelled() }}
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup MATLAB
         shell: pwsh
-
         run: |
           $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name:
-          Launch MATLAB
+      - name: Launch MATLAB
+        shell: pwsh
+        run: >
+          matlab
+          -nodesktop
+          -logfile output.log
+          -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);"
 
-        run:
-          >
-          matlab 
-          -nodesktop 
-          -logfile output.log 
-          -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);" 
- 
       - name: Debug – list Process Advisor outputs
         shell: pwsh
         run: |
@@ -195,17 +193,17 @@ jobs:
 
   #     - name:
   #         Upload Artifacts
-
+  #
   #       if:
   #         ${{ !cancelled() }}
-
+  #
   #       uses:
   #         actions/upload-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Runprocess_padv_artifacts
-
+  #
   #         path:
   #           |
   #           derived\artifacts.dmr
@@ -247,151 +245,151 @@ jobs:
   #           04_Results\OuterLoop_Control\webview
   #           04_Results\test_results\findAcrossModelClones
   #           04_Results\test_results\findLibraryClones
-
+  #
   #         retention-days:
   #           30
-
-
-
-
+  #
+  #
+  #
+  #
   # Generate_PADV_Report:
   #   if:
   #     ${{ !cancelled() }}
-
+  #
   #   needs:
   #     Runprocess
-
+  #
   #   runs-on:
   #     self-hosted
-
+  #
   #   steps:
   #     - name:
   #         Checkout Repository
-
+  #
   #       uses:
   #         actions/checkout@v4
-
+  #
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Restore_Cache_padv_artifacts
-
-
+  #
+  #
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Runprocess_padv_artifacts
-
-
+  #
+  #
   #     - name:
   #         Setup MATLAB
-
+  #
   #       run:
-  #         echo "$PATH_TO_MATLAB" >> $GITHUB_PATH
-
+  #         echo "$PATH_TO_MATLAB" &gt;&gt; $GITHUB_PATH
+  #
   #     - name:
   #         Generate PADV Report
-
+  #
   #       run:
-  #         >
+  #         &gt;
   #         matlab 
   #         -nodesktop 
   #         -logfile output.log 
   #         -batch "openProject(pwd);
   #         rptObj=padv.ProcessAdvisorReportGenerator(Process = 'CIPipeline', Format='pdf', OutputPath=fullfile(currentProject().RootFolder,'ProcessAdvisorReport'));
   #         rptObj.generateReport();" 
-
+  #
   #     - name:
   #         Upload Artifacts
-
+  #
   #       if:
   #         ${{ !cancelled() }}
-
+  #
   #       uses:
   #         actions/upload-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Generate_PADV_Report_padv_artifacts
-
+  #
   #         path:
   #           |
   #           derived\artifacts.dmr
   #           ProcessAdvisorReport.pdf
-
+  #
   #         retention-days:
   #           30
-
-
-
-
+  #
+  #
+  #
+  #
   # Collect_Artifacts:
   #   if:
   #     ${{ !cancelled() }}
-
+  #
   #   needs:
   #     Generate_PADV_Report
-
+  #
   #   runs-on:
   #     self-hosted
-
+  #
   #   steps:
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Restore_Cache_padv_artifacts
-
-
+  #
+  #
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Runprocess_padv_artifacts
-
-
+  #
+  #
   #     - name:
   #         Download Artifacts
-
+  #
   #       uses:
   #         actions/download-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Generate_PADV_Report_padv_artifacts
-
-
+  #
+  #
   #     - name:
   #         Upload Artifacts
-
+  #
   #       if:
   #         ${{ !cancelled() }}
-
+  #
   #       uses:
   #         actions/upload-artifact@v4
-
+  #
   #       with:
   #         name:
   #           Collect_Artifacts_padv_artifacts
-
+  #
   #         path:
   #           |
   #           derived\artifacts.dmr
@@ -433,21 +431,21 @@ jobs:
   #           04_Results\OuterLoop_Control\webview
   #           04_Results\test_results\findAcrossModelClones
   #           04_Results\test_results\findLibraryClones
-
+  #
   #         retention-days:
   #           30
-
-
+  #
+  #
   #     - name:
   #         Save Cache
-
+  #
   #       uses:
   #         actions/cache@v4
-
+  #
   #       with:
   #         key:
   #           padv_artifacts-cache-${{ github.sha }}
-
+  #
   #         path:
   #           |
   #           03_Code
