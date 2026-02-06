@@ -173,12 +173,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup MATLAB
-        shell: pwsh
+        shell: powershell
         run: |
           $env:PATH_TO_MATLAB | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Launch MATLAB
-        shell: pwsh
+        shell: powershell
         run: >
           matlab
           -nodesktop
@@ -186,7 +186,7 @@ jobs:
           -batch "openProject(pwd);runprocess(Process = 'CIPipeline', Force = false, ExitInBatchMode = true, RerunFailedTasks = false, RerunErroredTasks = false, GenerateJUnitForProcess = false);"
 
       - name: Debug – list Process Advisor outputs
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "=== Workspace contents after PADV ==="
           Get-ChildItem -Recurse -Force
